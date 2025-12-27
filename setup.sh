@@ -292,6 +292,8 @@ server {
     listen 80;
     server_name $ACCESS_DOMAIN;
     location / {
+        # Redirect HTTP to HTTPS
+        # We use \$ here so the script doesn't replace these variables
         return 301 https://\$host\$request_uri;
     }
 }
@@ -308,12 +310,14 @@ server {
     
     location / {
         proxy_pass http://n8n:5678;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # We use \$ here so the script passes the literal text "$host" to Nginx
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_buffering off;
     }
